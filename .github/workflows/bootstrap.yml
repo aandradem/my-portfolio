@@ -1,0 +1,30 @@
+name: Bootstrap portfolio source
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract portfolio source
+        run: |
+          rm -rf .portfolio-source
+          unzip -q anderson-portfolio-github-pages-v2.zip -d .portfolio-source
+          cp -a .portfolio-source/anderson-portfolio-github-pages/. ./
+          rm -rf .portfolio-source anderson-portfolio-github-pages-v2.zip
+          rm -f .github/workflows/bootstrap.yml
+          sed -i 's/npm ci/npm install/' .github/workflows/deploy.yml
+      - name: Commit extracted source
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet && exit 0
+          git commit -m "Add Anderson portfolio source"
+          git push
